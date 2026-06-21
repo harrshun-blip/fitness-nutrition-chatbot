@@ -34,18 +34,11 @@
           <span class="tagline">Fitness &amp; Nutrition AI</span>
         </div>
       </div>
-      <div class="header-actions">
-        <button id="keyBtn" class="icon-btn" title="API key" aria-label="API key">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.5 12.5 21 2"/><path d="M16 7l3 3"/><path d="M18 5l3 3"/>
-          </svg>
-        </button>
-        <button id="newChat" class="icon-btn" title="New chat" aria-label="New chat">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-        </button>
-      </div>
+      <button id="newChat" class="icon-btn" title="New chat" aria-label="New chat">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
     </header>
 
     <!-- Chat -->
@@ -78,26 +71,6 @@
         </svg>
       </button>
     </form>
-  </div>
-
-  <!-- API key modal -->
-  <div id="keyModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-orb" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.5 12.5 21 2"/><path d="M16 7l3 3"/><path d="M18 5l3 3"/>
-        </svg>
-      </div>
-      <h2>Connect your Groq key</h2>
-      <p>Pulse needs your own free Groq API key. It's stored only on this device
-         and never shared. Get one at
-         <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>.</p>
-      <input id="keyInput" type="password" inputmode="text" autocomplete="off"
-             placeholder="Paste your API key (gsk_…)" />
-      <div id="keyError" class="key-error hidden"></div>
-      <button id="keySave" class="primary-btn">Save &amp; start</button>
-      <button id="keyCancel" class="text-btn hidden">Cancel</button>
-    </div>
   </div>
 
   <script src="app.js"></script>

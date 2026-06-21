@@ -1,4 +1,5 @@
-// Pulse PWA front-end logic (BYOK via HttpOnly cookie).
+// Pulse PWA front-end logic. The Groq key lives on the server, so there is no
+// key prompt — the app just works.
 
 const chat = document.getElementById("chat");
 const welcome = document.getElementById("welcome");
@@ -6,14 +7,6 @@ const composer = document.getElementById("composer");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
 const newChatBtn = document.getElementById("newChat");
-
-// Key modal elements
-const keyBtn = document.getElementById("keyBtn");
-const keyModal = document.getElementById("keyModal");
-const keyInput = document.getElementById("keyInput");
-const keyError = document.getElementById("keyError");
-const keySave = document.getElementById("keySave");
-const keyCancel = document.getElementById("keyCancel");
 
 let history = [];
 let busy = false;
@@ -31,61 +24,6 @@ try {
     scrollToBottom();
   }
 } catch (_) {}
-
-// ---- Key modal handling ----
-function showKeyModal({ allowCancel = false } = {}) {
-  keyError.classList.add("hidden");
-  keyInput.value = "";
-  keyCancel.classList.toggle("hidden", !allowCancel);
-  keyModal.classList.remove("hidden");
-  setTimeout(() => keyInput.focus(), 100);
-}
-function hideKeyModal() { keyModal.classList.add("hidden"); }
-
-async function checkKey() {
-  try {
-    const r = await api("/api/status");
-    const data = await r.json();
-    if (!data.has_key) showKeyModal({ allowCancel: false });
-  } catch (_) {
-    // If status can't be reached, let the chat flow surface the error later.
-  }
-}
-
-async function saveKey() {
-  const key = keyInput.value.trim();
-  if (!key) { showKeyError("Please paste your key."); return; }
-  keySave.disabled = true;
-  keySave.textContent = "Checking…";
-  try {
-    const r = await api("/api/key", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key }),
-    });
-    const data = await r.json();
-    if (r.ok && data.ok) {
-      hideKeyModal();
-    } else {
-      showKeyError(data.error || "Could not save that key.");
-    }
-  } catch (_) {
-    showKeyError("Network error. Please try again.");
-  } finally {
-    keySave.disabled = false;
-    keySave.textContent = "Save & start";
-  }
-}
-
-function showKeyError(msg) {
-  keyError.textContent = msg;
-  keyError.classList.remove("hidden");
-}
-
-keySave.addEventListener("click", saveKey);
-keyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") saveKey(); });
-keyCancel.addEventListener("click", hideKeyModal);
-keyBtn.addEventListener("click", () => showKeyModal({ allowCancel: true }));
 
 // ---- Tiny markdown -> HTML ----
 function escapeHtml(s) {
@@ -161,8 +99,7 @@ async function send(text) {
     typing.remove();
 
     if (res.status === 401) {
-      addBubble("bot", "🔑 I need your Gemini API key to answer. Please add it.");
-      showKeyModal({ allowCancel: true });
+      addBubble("bot", "⚙️ The server isn't set up with an API key yet. (Admin: set GROQ_API_KEY.)");
       return;
     }
     const data = await res.json();
@@ -193,6 +130,3 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js").catch(() => {});
   });
 }
-
-// On load, make sure a key is set.
-checkKey();
