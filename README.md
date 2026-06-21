@@ -37,19 +37,22 @@ Built to run entirely in the cloud — no local computer required. Develop it in
 1. On this repo's GitHub page, click the green **`< > Code`** button →
    **Codespaces** → **Create codespace on main**. Wait for it to finish setting
    up (it auto-installs the dependencies).
-2. Get a free Gemini API key at <https://aistudio.google.com/app/apikey>.
-3. In the Codespace terminal:
-   ```bash
-   cp .env.example .env      # then paste your key after GEMINI_API_KEY=
-   ```
-4. Start the mobile app server:
+2. Start the mobile app server:
    ```bash
    uvicorn server:app --host 0.0.0.0 --port 8000
    ```
-5. Codespaces will pop up a notification to open the forwarded port — open it.
-   You'll see the Pulse chat app. 🎉
+3. Codespaces will pop up a notification to open the forwarded port — open it.
+   The app opens and **asks for your Gemini API key**. Get a free one at
+   <https://aistudio.google.com/app/apikey>, paste it in, and you're chatting. 🎉
 
-> Prefer the simple Streamlit version instead? Run `streamlit run app.py`.
+> **Bring your own key (BYOK):** Pulse never stores the key in the code or in git.
+> You paste your key into the app; the server saves it in a **secure, HttpOnly
+> cookie on your device**, so it's remembered on reload but unreadable by page
+> scripts. Use the 🔑 button in the header to change it. (A `GEMINI_API_KEY` in
+> `.env` also works as a fallback for personal/local use.)
+
+> Prefer the simple Streamlit version instead? Run `streamlit run app.py`
+> (that one uses `.env` / Streamlit secrets for the key).
 
 ## 📱 Install Pulse on an Android phone
 

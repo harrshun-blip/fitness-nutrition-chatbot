@@ -31,13 +31,24 @@ Rules:
 _URL_RE = re.compile(r"https?://[^\s]+")
 
 
-def _configure():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+def _configure(api_key: str | None = None):
+    """Configure Gemini with a per-request key if given, else the env key."""
+    key = api_key or os.getenv("GEMINI_API_KEY")
+    if not key:
         raise RuntimeError(
-            "GEMINI_API_KEY is not set. Add it to your .env file or Streamlit secrets."
+            "No Gemini API key provided. Enter one in the app, or set GEMINI_API_KEY."
         )
-    genai.configure(api_key=api_key)
+    genai.configure(api_key=key)
+
+
+def validate_key(api_key: str) -> bool:
+    """Cheap check that a key works (lists models). Returns True/False."""
+    try:
+        genai.configure(api_key=api_key)
+        next(iter(genai.list_models()))
+        return True
+    except Exception:
+        return False
 
 
 def _gather_context(user_message: str) -> str:
@@ -66,12 +77,14 @@ def _gather_context(user_message: str) -> str:
     return "\n\n".join(context_parts)
 
 
-def ask_pulse(user_message: str, history: list[dict] | None = None) -> str:
+def ask_pulse(user_message: str, history: list[dict] | None = None,
+              api_key: str | None = None) -> str:
     """Send the user message (plus any grounding context) to Gemini and return the reply.
 
     `history` is a list of {"role": "user"|"model", "content": str} dicts.
+    `api_key` is the caller's Gemini key (from the browser cookie); falls back to env.
     """
-    _configure()
+    _configure(api_key)
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         system_instruction=SYSTEM_PROMPT,
