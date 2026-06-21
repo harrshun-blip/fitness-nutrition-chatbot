@@ -1,4 +1,4 @@
-// Pulse PWA front-end logic.
+// Pulse PWA front-end logic (BYOK via HttpOnly cookie).
 
 const chat = document.getElementById("chat");
 const welcome = document.getElementById("welcome");
@@ -7,8 +7,19 @@ const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
 const newChatBtn = document.getElementById("newChat");
 
-let history = [];            // [{role:"user"|"model", content:""}]
+// Key modal elements
+const keyBtn = document.getElementById("keyBtn");
+const keyModal = document.getElementById("keyModal");
+const keyInput = document.getElementById("keyInput");
+const keyError = document.getElementById("keyError");
+const keySave = document.getElementById("keySave");
+const keyCancel = document.getElementById("keyCancel");
+
+let history = [];
 let busy = false;
+
+const api = (path, opts = {}) =>
+  fetch(path, { credentials: "same-origin", ...opts });
 
 // ---- Restore previous conversation (this device only) ----
 try {
@@ -21,14 +32,68 @@ try {
   }
 } catch (_) {}
 
-// ---- Tiny markdown -> HTML (bold, code, bullet lists, paragraphs) ----
+// ---- Key modal handling ----
+function showKeyModal({ allowCancel = false } = {}) {
+  keyError.classList.add("hidden");
+  keyInput.value = "";
+  keyCancel.classList.toggle("hidden", !allowCancel);
+  keyModal.classList.remove("hidden");
+  setTimeout(() => keyInput.focus(), 100);
+}
+function hideKeyModal() { keyModal.classList.add("hidden"); }
+
+async function checkKey() {
+  try {
+    const r = await api("/api/status");
+    const data = await r.json();
+    if (!data.has_key) showKeyModal({ allowCancel: false });
+  } catch (_) {
+    // If status can't be reached, let the chat flow surface the error later.
+  }
+}
+
+async function saveKey() {
+  const key = keyInput.value.trim();
+  if (!key) { showKeyError("Please paste your key."); return; }
+  keySave.disabled = true;
+  keySave.textContent = "Checking…";
+  try {
+    const r = await api("/api/key", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    });
+    const data = await r.json();
+    if (r.ok && data.ok) {
+      hideKeyModal();
+    } else {
+      showKeyError(data.error || "Could not save that key.");
+    }
+  } catch (_) {
+    showKeyError("Network error. Please try again.");
+  } finally {
+    keySave.disabled = false;
+    keySave.textContent = "Save & start";
+  }
+}
+
+function showKeyError(msg) {
+  keyError.textContent = msg;
+  keyError.classList.remove("hidden");
+}
+
+keySave.addEventListener("click", saveKey);
+keyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") saveKey(); });
+keyCancel.addEventListener("click", hideKeyModal);
+keyBtn.addEventListener("click", () => showKeyModal({ allowCancel: true }));
+
+// ---- Tiny markdown -> HTML ----
 function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 function renderMarkdown(text) {
   const lines = escapeHtml(text).split("\n");
-  let html = "";
-  let inList = false;
+  let html = "", inList = false;
   for (let raw of lines) {
     let line = raw
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
@@ -70,7 +135,6 @@ function addTyping() {
 function scrollToBottom() {
   requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
 }
-
 function save() {
   try { localStorage.setItem("pulse_history", JSON.stringify(history)); } catch (_) {}
 }
@@ -88,15 +152,20 @@ async function send(text) {
   input.value = "";
 
   const typing = addTyping();
-
   try {
-    const res = await fetch("/api/chat", {
+    const res = await api("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
     });
-    const data = await res.json();
     typing.remove();
+
+    if (res.status === 401) {
+      addBubble("bot", "🔑 I need your Gemini API key to answer. Please add it.");
+      showKeyModal({ allowCancel: true });
+      return;
+    }
+    const data = await res.json();
     const reply = data.reply || "Sorry, I didn't get a response.";
     addBubble("bot", reply);
     history.push({ role: "model", content: reply });
@@ -112,26 +181,18 @@ async function send(text) {
   }
 }
 
-composer.addEventListener("submit", (e) => {
-  e.preventDefault();
-  send(input.value);
-});
+composer.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+document.querySelectorAll(".chip").forEach((chip) =>
+  chip.addEventListener("click", () => send(chip.textContent))
+);
+newChatBtn.addEventListener("click", () => { history = []; save(); location.reload(); });
 
-// Suggestion chips
-document.querySelectorAll(".chip").forEach((chip) => {
-  chip.addEventListener("click", () => send(chip.textContent));
-});
-
-// New chat
-newChatBtn.addEventListener("click", () => {
-  history = [];
-  save();
-  location.reload();
-});
-
-// ---- Register the service worker (makes it installable + offline shell) ----
+// Register service worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js").catch(() => {});
   });
 }
+
+// On load, make sure a key is set.
+checkKey();
