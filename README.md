@@ -12,7 +12,7 @@ Built to run entirely in the cloud — no local computer required. Develop it in
 
 ## What it does
 
-- 🤖 **Conversational AI** powered by Google Gemini (free tier).
+- 🤖 **Conversational AI** powered by Groq (Llama 3.3 70B by default, free tier).
 - 🥗 **Real nutrition data** from the USDA FoodData Central and Open Food Facts
   APIs — so answers use real numbers, not guesses.
 - 🌐 **Web scraping** — paste a recipe or article URL and Pulse reads the page
@@ -42,14 +42,17 @@ Built to run entirely in the cloud — no local computer required. Develop it in
    uvicorn server:app --host 0.0.0.0 --port 8000
    ```
 3. Codespaces will pop up a notification to open the forwarded port — open it.
-   The app opens and **asks for your Gemini API key**. Get a free one at
-   <https://aistudio.google.com/app/apikey>, paste it in, and you're chatting. 🎉
+   The app opens and **asks for your Groq API key**. Get a free one at
+   <https://console.groq.com/keys>, paste it in, and you're chatting. 🎉
 
 > **Bring your own key (BYOK):** Pulse never stores the key in the code or in git.
 > You paste your key into the app; the server saves it in a **secure, HttpOnly
 > cookie on your device**, so it's remembered on reload but unreadable by page
-> scripts. Use the 🔑 button in the header to change it. (A `GEMINI_API_KEY` in
+> scripts. Use the 🔑 button in the header to change it. (A `GROQ_API_KEY` in
 > `.env` also works as a fallback for personal/local use.)
+>
+> **Model:** default is `llama-3.3-70b-versatile`. Change it with the `GROQ_MODEL`
+> env var (e.g. `llama-3.1-8b-instant`, `openai/gpt-oss-120b`, `qwen/qwen3-32b`).
 
 > Prefer the simple Streamlit version instead? Run `streamlit run app.py`
 > (that one uses `.env` / Streamlit secrets for the key).
@@ -86,7 +89,7 @@ The PWA needs an HTTPS host. Good free options for the FastAPI backend + static
 front-end:
 
 - **Render** (<https://render.com>) — free web service; start command
-  `uvicorn server:app --host 0.0.0.0 --port $PORT`. Add `GEMINI_API_KEY` as an
+  `uvicorn server:app --host 0.0.0.0 --port $PORT`. Add `GROQ_API_KEY` as an
   environment variable.
 - **Hugging Face Spaces** (Docker) or **Railway** also work well.
 

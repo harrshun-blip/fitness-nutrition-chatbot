@@ -12,7 +12,7 @@ from chatbot import ask_pulse
 load_dotenv()  # load GEMINI_API_KEY etc. from a local .env file if present
 
 # On Streamlit Cloud, secrets live in st.secrets -> mirror them into env vars.
-for key in ("GEMINI_API_KEY", "USDA_API_KEY"):
+for key in ("GROQ_API_KEY", "USDA_API_KEY"):
     if key in st.secrets and not os.getenv(key):
         os.environ[key] = st.secrets[key]
 
@@ -25,11 +25,11 @@ st.caption("Your AI assistant for fitness, diet and nutrition. "
 with st.sidebar:
     st.header("About")
     st.write(
-        "Pulse uses Google Gemini, plus live nutrition data from the USDA "
+        "Pulse uses Groq (Llama 3.3 70B), plus live nutrition data from the USDA "
         "and Open Food Facts. Not a substitute for professional medical advice."
     )
-    if not os.getenv("GEMINI_API_KEY"):
-        st.error("No GEMINI_API_KEY found. Add it to .env or Streamlit secrets.")
+    if not os.getenv("GROQ_API_KEY"):
+        st.error("No GROQ_API_KEY found. Add it to .env or Streamlit secrets.")
     if st.button("Clear chat"):
         st.session_state.messages = []
         st.rerun()

@@ -61,8 +61,13 @@ def _resolve_key(request: Request) -> str | None:
 # ---------- key management ----------
 @app.get("/api/status")
 def status(request: Request):
-    """Tell the front-end whether a usable key is already set."""
-    return {"has_key": bool(_resolve_key(request))}
+    """Tell the front-end whether a usable, VALID key is already set.
+
+    Validating here means that if the stored key is wrong/expired (e.g. left
+    over from a different provider), the app will re-prompt on a simple refresh.
+    """
+    key = _resolve_key(request)
+    return {"has_key": bool(key) and validate_key(key)}
 
 
 @app.post("/api/key")
