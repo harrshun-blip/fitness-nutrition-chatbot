@@ -1,7 +1,9 @@
-// Pulse service worker — caches the app shell so the PWA installs and the UI
-// loads instantly (and offline). Chat responses still require a network call.
+// Pulse service worker.
+// Strategy: NETWORK-FIRST for the app shell so a simple refresh always picks up
+// the latest UI when online, with a cache fallback so it still works offline.
+// API calls are never cached.
 
-const CACHE = "pulse-shell-v1";
+const CACHE = "pulse-shell-v2";
 const SHELL = [
   ".",
   "index.html",
@@ -32,8 +34,14 @@ self.addEventListener("fetch", (event) => {
   // Never cache API calls — always hit the network.
   if (request.url.includes("/api/")) return;
 
-  // Cache-first for the app shell, falling back to network.
+  // Network-first: fetch fresh, update cache, fall back to cache when offline.
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request))
+    fetch(request)
+      .then((resp) => {
+        const copy = resp.clone();
+        caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+        return resp;
+      })
+      .catch(() => caches.match(request))
   );
 });
