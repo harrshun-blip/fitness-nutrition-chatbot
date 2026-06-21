@@ -1,5 +1,12 @@
-streamlit>=1.36
+# Core AI + data
 google-generativeai>=0.7
 requests>=2.31
 beautifulsoup4>=4.12
 python-dotenv>=1.0
+
+# PWA backend
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# Optional: Streamlit version of the app (app.py)
+streamlit>=1.36

@@ -1,66 +1,91 @@
-# 💪 FitBot — Fitness & Nutrition AI Chatbot
+# 💧 Pulse — Fitness & Nutrition AI Chatbot
 
-An AI chatbot for **fitness, diet and nutrition** with built-in **web scraping**.
-Built to run entirely in the cloud — no local computer required. You can develop
-it in **GitHub Codespaces** (VS Code in your browser) and deploy it for free.
+**Pulse** is an AI chatbot for **fitness, diet and nutrition** with built-in
+**web scraping**. It comes in two flavours:
+
+1. 📱 **Installable mobile app (PWA)** — a custom-designed chat UI you can add to
+   an Android home screen and use like a native app. *(recommended)*
+2. 🧪 **Streamlit version** — a quick, no-frontend way to test the same brain.
+
+Built to run entirely in the cloud — no local computer required. Develop it in
+**GitHub Codespaces** (VS Code in your browser) and deploy it for free.
 
 ## What it does
 
 - 🤖 **Conversational AI** powered by Google Gemini (free tier).
 - 🥗 **Real nutrition data** from the USDA FoodData Central and Open Food Facts
   APIs — so answers use real numbers, not guesses.
-- 🌐 **Web scraping** — paste a recipe or article URL and FitBot reads the page
+- 🌐 **Web scraping** — paste a recipe or article URL and Pulse reads the page
   (politely, respecting `robots.txt`).
-- 💬 **Chat UI** built with Streamlit.
+- 💧 **Beautiful chat UI** with an "Ocean Calm" theme, installable on Android.
 
 ## Project structure
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `app.py` | Streamlit chat interface |
+| `server.py` | FastAPI backend: serves the PWA + `/api/chat` (keeps the API key server-side) |
+| `static/` | The installable web app (HTML, CSS, JS, manifest, service worker, icons) |
 | `chatbot.py` | Gemini logic + decides when to look up nutrition / scrape |
 | `nutrition.py` | USDA + Open Food Facts API helpers |
 | `scraper.py` | Polite web-scraping helper (requests + BeautifulSoup) |
+| `app.py` | Optional Streamlit version of the same chatbot |
 | `requirements.txt` | Python dependencies |
 | `.env.example` | Template for your API keys |
 
 ## Quick start (in GitHub Codespaces — no computer needed)
 
 1. On this repo's GitHub page, click the green **`< > Code`** button →
-   **Codespaces** tab → **Create codespace on main**. This opens a full VS Code
-   environment in your browser.
-2. Wait for it to finish setting up (it auto-installs the dependencies).
-3. Get a free Gemini API key at <https://aistudio.google.com/app/apikey>.
-4. In the Codespace, copy the example env file and add your key:
+   **Codespaces** → **Create codespace on main**. Wait for it to finish setting
+   up (it auto-installs the dependencies).
+2. Get a free Gemini API key at <https://aistudio.google.com/app/apikey>.
+3. In the Codespace terminal:
    ```bash
-   cp .env.example .env
-   # then open .env and paste your key after GEMINI_API_KEY=
+   cp .env.example .env      # then paste your key after GEMINI_API_KEY=
    ```
-5. Run the app:
+4. Start the mobile app server:
    ```bash
-   streamlit run app.py
+   uvicorn server:app --host 0.0.0.0 --port 8000
    ```
-6. Click the link Codespaces pops up to open FitBot in your browser. 🎉
+5. Codespaces will pop up a notification to open the forwarded port — open it.
+   You'll see the Pulse chat app. 🎉
+
+> Prefer the simple Streamlit version instead? Run `streamlit run app.py`.
+
+## 📱 Install Pulse on an Android phone
+
+The app is a **PWA (Progressive Web App)**, so it installs straight from the
+browser — no Play Store needed. You need a public HTTPS URL (see *Deploy* below;
+Codespaces forwarded ports are HTTPS too, handy for testing).
+
+1. Open the app's URL in **Chrome on Android**.
+2. Tap the **⋮ menu** → **Add to Home screen** (or accept the "Install app"
+   prompt that appears).
+3. Pulse now has its own icon and opens full-screen, like a native app.
 
 ## Try these prompts
 
-- "How many calories and how much protein are in 100g of chicken breast?"
-- "Build me a high-protein vegetarian lunch under 600 calories."
+- "How much protein is in 100g chicken breast?"
+- "Build me a high-protein vegetarian lunch under 600 kcal."
 - "https://example.com/some-recipe — is this a good post-workout meal?"
-- "What's a good beginner full-body workout 3x a week?"
+- "A beginner full-body workout, 3x a week."
 
 ## Important notes
 
-- **Never commit your API keys.** The real `.env` file is gitignored. Keep it
-  that way.
-- FitBot is an educational tool, **not** a substitute for advice from a doctor,
+- **Never commit your API keys.** The real `.env` file is gitignored.
+- Pulse is an educational tool, **not** a substitute for advice from a doctor,
   dietitian, or qualified trainer.
 - Scrape responsibly: respect each site's Terms of Service and `robots.txt`, and
   prefer official APIs when they exist.
 
 ## Deploy it for free (later)
 
-- **Streamlit Community Cloud** — <https://share.streamlit.io>: connect this
-  GitHub repo, set `app.py` as the entry point, and add `GEMINI_API_KEY` under
-  the app's **Secrets**.
-- **Hugging Face Spaces** — also free; create a Streamlit Space from this repo.
+The PWA needs an HTTPS host. Good free options for the FastAPI backend + static
+front-end:
+
+- **Render** (<https://render.com>) — free web service; start command
+  `uvicorn server:app --host 0.0.0.0 --port $PORT`. Add `GEMINI_API_KEY` as an
+  environment variable.
+- **Hugging Face Spaces** (Docker) or **Railway** also work well.
+
+The Streamlit version can instead be deployed on **Streamlit Community Cloud**
+(<https://share.streamlit.io>) with `app.py` as the entry point.

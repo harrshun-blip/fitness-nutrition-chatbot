@@ -7,7 +7,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 
-from chatbot import ask_fitbot
+from chatbot import ask_pulse
 
 load_dotenv()  # load GEMINI_API_KEY etc. from a local .env file if present
 
@@ -16,16 +16,16 @@ for key in ("GEMINI_API_KEY", "USDA_API_KEY"):
     if key in st.secrets and not os.getenv(key):
         os.environ[key] = st.secrets[key]
 
-st.set_page_config(page_title="FitBot — Fitness & Nutrition AI", page_icon="💪")
+st.set_page_config(page_title="Pulse — Fitness & Nutrition AI", page_icon="💧")
 
-st.title("💪 FitBot")
+st.title("💧 Pulse")
 st.caption("Your AI assistant for fitness, diet and nutrition. "
            "Ask about workouts, macros, or paste a recipe URL to analyze it.")
 
 with st.sidebar:
     st.header("About")
     st.write(
-        "FitBot uses Google Gemini, plus live nutrition data from the USDA "
+        "Pulse uses Google Gemini, plus live nutrition data from the USDA "
         "and Open Food Facts. Not a substitute for professional medical advice."
     )
     if not os.getenv("GEMINI_API_KEY"):
@@ -43,14 +43,14 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 # Handle new input.
-if prompt := st.chat_input("Ask FitBot anything about fitness or nutrition..."):
+if prompt := st.chat_input("Ask Pulse anything about fitness or nutrition..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            reply = ask_fitbot(prompt, history=st.session_state.messages[:-1])
+            reply = ask_pulse(prompt, history=st.session_state.messages[:-1])
         st.markdown(reply)
 
     st.session_state.messages.append({"role": "model", "content": reply})

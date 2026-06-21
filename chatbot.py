@@ -15,7 +15,7 @@ import google.generativeai as genai
 from nutrition import get_nutrition_facts
 from scraper import scrape_text
 
-SYSTEM_PROMPT = """You are FitBot, a friendly and knowledgeable assistant for
+SYSTEM_PROMPT = """You are Pulse, a friendly and knowledgeable AI assistant for
 fitness, diet and nutrition. You give practical, evidence-based guidance on
 workouts, meal planning, macros and healthy habits.
 
@@ -66,7 +66,7 @@ def _gather_context(user_message: str) -> str:
     return "\n\n".join(context_parts)
 
 
-def ask_fitbot(user_message: str, history: list[dict] | None = None) -> str:
+def ask_pulse(user_message: str, history: list[dict] | None = None) -> str:
     """Send the user message (plus any grounding context) to Gemini and return the reply.
 
     `history` is a list of {"role": "user"|"model", "content": str} dicts.
@@ -98,4 +98,4 @@ def ask_fitbot(user_message: str, history: list[dict] | None = None) -> str:
 
 if __name__ == "__main__":
     # Quick manual test: python chatbot.py
-    print(ask_fitbot("How many calories are in a banana, and is it good pre-workout?"))
+    print(ask_pulse("How many calories are in a banana, and is it good pre-workout?"))
